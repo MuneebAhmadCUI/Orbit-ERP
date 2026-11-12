@@ -1,0 +1,207 @@
+================================================================================
+                              ORBIT ERP - WIDGET TREE
+================================================================================
+
+ErpApp (lib/app/app.dart)
+└── MaterialApp
+    ├── Theme: ThemeData (Material 3 Expressive, Botanical Green Palette)
+    └── home: SplashScreen
+        │
+        ├── SplashScreen (lib/features/auth/screens/splash_screen.dart)
+        │   └── Scaffold
+        │       └── SafeArea
+        │           └── Center
+        │               └── Column
+        │                   ├── Container (32px radius, Logo Icon)
+        │                   ├── Text ('ORBIT ERP')
+        │                   ├── Text ('Your business, connected.')
+        │                   └── SizedBox -> CircularProgressIndicator
+        │
+        └── [2 Sec Delay -> Navigates to LoginScreen]
+            │
+            └── LoginScreen (lib/features/auth/screens/login_screen.dart)
+                └── Scaffold
+                    └── SafeArea
+                        └── Center
+                            └── SingleChildScrollView
+                                └── ConstrainedBox (maxWidth: 440)
+                                    └── Form (_formKey)
+                                        └── Column
+                                            ├── Container (Icon Header)
+                                            ├── Text ('Welcome back')
+                                            ├── Text ('Sign in to manage...')
+                                            ├── Text ('Work email')
+                                            ├── TextFormField (_email)
+                                            ├── Text ('Password')
+                                            ├── TextFormField (_password)
+                                            ├── Align -> TextButton ('Forgot password?')
+                                            └── SizedBox -> FilledButton ('Sign in')
+                                                │
+                                                └── [On Tap -> Navigates to HomeShell]
+                                                    │
+                                                    └── HomeShell (lib/app/home_shell.dart)
+                                                        └── Scaffold
+                                                            ├── AppBar
+                                                            │   ├── leading: IconButton (Menu -> switches to Modules)
+                                                            │   ├── title: Text ('Dashboard' | 'Modules')
+                                                            │   └── actions: DropdownButton ('2026' | '2025')
+                                                            ├── body: IndexedStack (_selected)
+                                                            │   ├── [Index 0]: DashboardScreen
+                                                            │   └── [Index 1]: ModulesScreen
+                                                            └── bottomNavigationBar: NavigationBar
+                                                                ├── NavigationDestination ('Dashboard')
+                                                                ├── NavigationDestination ('Modules')
+                                                                ├── NavigationDestination ('Search')
+                                                                ├── NavigationDestination ('Alerts')
+                                                                └── NavigationDestination ('Account')
+
+
+================================================================================
+                             SCREEN DETAILED TREES
+================================================================================
+
+--------------------------------------------------------------------------------
+1. DashboardScreen (lib/features/dashboard/screens/dashboard_screen.dart)
+--------------------------------------------------------------------------------
+DashboardScreen
+└── FutureBuilder<_DashboardData> (Fetches SQLite KPIs & Activities)
+    └── ListView (padding: 16)
+        ├── Text ('Overview')
+        ├── SizedBox (height: 202)
+        │   └── Row
+        │       ├── Expanded -> Container (Primary Card, 32px radius)
+        │       │   └── Column
+        │       │       ├── Row (Icon + Text 'Invoices')
+        │       │       ├── Spacer
+        │       │       ├── Text ('$unpaidCount')
+        │       │       ├── Text ('Unpaid')
+        │       │       └── SizedBox -> FilledButton ('View All') -> InvoicesScreen
+        │       └── Expanded -> Column
+        │           ├── _QuickAction ('Add Customer') -> AddCustomerScreen
+        │           ├── _QuickAction ('Create Invoice') -> CreateInvoiceScreen
+        │           └── _QuickAction ('Add Vendor') -> AddVendorScreen
+        ├── Wrap (Quick Navigation OutlinedButtons)
+        │   ├── OutlinedButton.icon ('Customers') -> CustomersScreen
+        │   ├── OutlinedButton.icon ('Vendors') -> VendorsScreen
+        │   └── OutlinedButton.icon ('Invoices') -> InvoicesScreen
+        ├── SectionCard (Company Turnover, 32px radius)
+        │   └── Column
+        │       ├── Row ('Company Turnover' + Year Dropdown)
+        │       ├── Wrap (_Legend: 'Existing Customers' | 'New Customers')
+        │       └── SizedBox -> _TurnoverChart
+        │           └── FutureBuilder<_TurnoverData> (SQLite Invoices Query)
+        │               └── Row (Y-Axis Labels + Stacked Monthly Bar Charts)
+        ├── SectionCard (Current Week Performance)
+        │   └── Column
+        │       ├── Text ('Current Week Performance')
+        │       └── Row
+        │           ├── Expanded -> _Kpi ('Sales', salesVal)
+        │           ├── Expanded -> _Kpi ('Orders', ordersVal)
+        │           └── Expanded -> _Kpi ('Tasks', tasksVal)
+        └── SectionCard (Recent Activity)
+            └── Column
+                ├── Text ('Recent activity')
+                └── List.generate -> _Activity (Icon, Title, Subtitle with Relative Timestamp)
+
+
+--------------------------------------------------------------------------------
+2. InvoicesScreen (lib/features/sales/screens/invoices_screen.dart)
+--------------------------------------------------------------------------------
+InvoicesScreen
+└── Scaffold
+    ├── AppBar ('Invoices')
+    ├── floatingActionButton: FloatingActionButton.extended ('+ Invoice') -> CreateInvoiceScreen
+    └── body: FutureBuilder<List<Map<String, dynamic>>> (SQLite Query)
+        └── Column
+            ├── SegmentedButton ('All' | 'Unpaid' | 'Paid')
+            └── Expanded -> ListView.separated
+                └── ListTile
+                    ├── leading: Checkbox (Toggles Paid/Unpaid status in SQLite)
+                    ├── title: Row (Invoice Number + Status Badge)
+                    ├── subtitle: Customer Name
+                    └── trailing: Row (Total Amount + Delete IconButton)
+
+
+--------------------------------------------------------------------------------
+3. CustomersScreen (lib/features/customers/screens/customers_screen.dart)
+--------------------------------------------------------------------------------
+CustomersScreen
+└── Scaffold
+    ├── AppBar ('Customers' | '$selectedCount Selected')
+    │   └── actions: Select Mode Toggle, Select All Button, Batch Delete Button
+    ├── floatingActionButton: FloatingActionButton.extended ('+ Customer') -> AddCustomerScreen
+    └── body: FutureBuilder<List<Map<String, dynamic>>> (SQLite Query)
+        └── Column
+            ├── Header Row (Customer Count + 'Select All' Button)
+            └── Expanded -> ListView.separated
+                └── ListTile
+                    ├── leading: Checkbox (Select Mode) | CircleAvatar
+                    ├── title: Customer Name
+                    ├── subtitle: Company • Phone • Email
+                    └── trailing: Row
+                        ├── IconButton (Edit Pencil) -> AddCustomerScreen(customer: item)
+                        └── IconButton (Delete Trash) -> Single Delete Confirmation Dialog
+
+
+--------------------------------------------------------------------------------
+4. VendorsScreen (lib/features/vendors/screens/vendors_screen.dart)
+--------------------------------------------------------------------------------
+VendorsScreen
+└── Scaffold
+    ├── AppBar ('Vendors' | '$selectedCount Selected')
+    │   └── actions: Select Mode Toggle, Select All Button, Batch Delete Button
+    ├── floatingActionButton: FloatingActionButton.extended ('+ Vendor') -> AddVendorScreen
+    └── body: FutureBuilder<List<Map<String, dynamic>>> (SQLite Query)
+        └── Column
+            ├── Header Row (Vendor Count + 'Select All' Button)
+            └── Expanded -> ListView.separated
+                └── ListTile
+                    ├── leading: Checkbox (Select Mode) | CircleAvatar
+                    ├── title: Vendor Name
+                    ├── subtitle: Contact • Phone • Email
+                    └── trailing: Row
+                        ├── IconButton (Edit Pencil) -> AddVendorScreen(vendor: item)
+                        └── IconButton (Delete Trash) -> Single Delete Confirmation Dialog
+
+
+--------------------------------------------------------------------------------
+5. CreateInvoiceScreen (lib/features/sales/screens/create_invoice_screen.dart)
+--------------------------------------------------------------------------------
+CreateInvoiceScreen
+└── Scaffold
+    ├── AppBar ('Create Invoice')
+    └── body: Form (_formKey)
+        └── ListView (padding: 16)
+            ├── Text ('Invoice details')
+            ├── DropdownButtonFormField<String> (Customer Picker from SQLite)
+            ├── OutlinedButton.icon (Due Date Picker Dialog)
+            ├── Text ('Line items')
+            ├── ...List.generate (_lines)
+            │   └── Card
+            │       └── Column
+            │           ├── Row (Item Label + Delete Line Button)
+            │           ├── ErpTextField (Description)
+            │           ├── Row (Quantity + Unit Price ErpTextFields)
+            │           └── Text (Calculated Line Amount)
+            ├── OutlinedButton.icon ('Add line item')
+            ├── ErpTextField ('Tax (%)')
+            ├── ErpTextField ('Notes')
+            ├── Card (Subtotal, Tax, and Total Summary)
+            └── FilledButton ('Save Invoice') -> Inserts into SQLite & Logs Activity
+
+
+--------------------------------------------------------------------------------
+6. AddCustomerScreen & AddVendorScreen
+--------------------------------------------------------------------------------
+AddCustomerScreen / AddVendorScreen
+└── Scaffold
+    ├── AppBar ('Add Customer' | 'Edit Customer')
+    └── body: Form (_formKey)
+        └── ListView (padding: 16)
+            ├── Text ('Customer information' | 'Edit customer details')
+            ├── ErpTextField (Name)
+            ├── ErpTextField (Company / Contact)
+            ├── ErpTextField (Email)
+            ├── ErpTextField (Phone)
+            ├── ErpTextField (Address)
+            └── FilledButton ('Save' | 'Update') -> Inserts/Updates in SQLite & Logs Activity
